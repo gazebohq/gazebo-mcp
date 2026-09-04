@@ -1,0 +1,9 @@
+# Gazebo MCP repository ownership
+* @ashconway
+
+# Security-sensitive public claims
+/README.md @ashconway
+/SECURITY.md @ashconway
+/THREAT_MODEL.md @ashconway
+/docs/ @ashconway
+/.github/ @ashconway
