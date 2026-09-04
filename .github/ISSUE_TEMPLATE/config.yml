@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Gazebo security report
+    url: https://gazebohq.com/contact
+    about: Report vulnerabilities and credential exposure privately.
+  - name: Gazebo MCP documentation
+    url: https://gazebohq.com/docs/mcp
+    about: Read the product documentation and setup guides.
