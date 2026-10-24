@@ -2,14 +2,16 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.gazebohq/gazebo",
   "title": "Gazebo",
-  "description": "Credential retrieval for AI agents, with scoped identities, audit events and revocable access.",
+  "description": "Scoped credential retrieval for AI agents, with audit events and revocable future access.",
   "version": "1.0.0",
   "websiteUrl": "https://gazebohq.com/docs/mcp",
   "icons": [
     {
       "src": "https://gazebohq.com/favicon.png",
       "mimeType": "image/png",
-      "sizes": ["512x512"]
+      "sizes": [
+        "512x512"
+      ]
     }
   ],
   "remotes": [
