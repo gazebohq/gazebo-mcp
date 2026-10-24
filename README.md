@@ -74,6 +74,8 @@ Returns recent credential-access attempts for the authenticated agent.
 
 ## Client configuration
 
+**Tested with Cursor Desktop, Claude Desktop, Devin, Codex CLI and the OpenAI Responses API.** See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
+
 Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
 ```text
@@ -163,11 +165,9 @@ The endpoint is stateless, JSON-only Streamable HTTP over `POST`. Accepted notif
 
 Credential denials and missing keys use HTTP 200 with result.isError: true, not REST-style 403/404. Inspect the tool result as well as HTTP status.
 
-## Readiness and registry status
+## Registry status
 
-Authenticated production protocol checks passed using an existing fictional-key fixture, including retrieval, denial, audit pagination and revoked-token rejection. See [production verification](docs/production-verification.md). Separate user-performed Claude Desktop, Cursor Desktop and Devin-hosted OAuth tests passed approval, tool discovery, identity, named retrieval and reported rejection after the revocation step. Devin also returned the matching successful audit event. See the client verification matrix for precise evidence and limits.
-
-The remote-only [server.json](server.json) passes the official registry schema. It has not been submitted. Real-client results and publisher authentication remain required; see [submission checklist](docs/registry-submission.md).
+The remote-only [server.json](server.json) passes the official Registry schema. Publication is pending; see the [submission checklist](docs/registry-submission.md). Protocol results and client-by-client evidence live in the [compatibility guide](docs/client-verification.md).
 
 ## Support and security
 
