@@ -30,7 +30,10 @@ Manual bearer-token setup remains documented separately for clients that need it
 - Claude Desktop on macOS completed OAuth approval, three-tool discovery,
   identity lookup, named credential retrieval and post-revocation rejection.
   The exact Claude version and audit-tool call remain unrecorded.
-- Other desktop/CLI clients remain pending under the existing broader gate.
+- Cursor Desktop completed DCR OAuth, identity, named test-key retrieval and reported fresh-request rejection after the revocation step.
+- Devin hosted completed Personal OAuth, discovery and all three tools, including the matching successful audit event; a fresh request then required OAuth after the revocation step.
+- Codex CLI 0.164.0 native app-server tool execution passed separately with a manual token; Claude Code 2.1.310 has connection-health evidence only.
+- The original all-client release gate remains unresolved: Claude Code tool execution, legacy Windsurf/Cascade and some per-client cases are unverified. Submitting based only on verified paths requires an explicit maintainer decision, not a silent gate change.
 - Publisher GitHub authentication and the final publish have not happened.
 
 ## Submission gate

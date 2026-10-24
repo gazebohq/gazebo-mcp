@@ -4,7 +4,7 @@ On 25 October 2026, twenty authenticated HTTP protocol checks passed against htt
 
 The run created one expiring temporary agent in the dedicated smoke account using its established fictional service key. Only that agent's access policy changed. The agent was revoked, cleanup confirmed zero active test agents remained, and the fictional credential was not sent to any provider API. Existing service credentials were unchanged. Audit events remain and normal access-denied notifications may have been triggered. No tokens, credential responses, account identifiers or raw transcripts are included here.
 
-These are direct JSON-RPC HTTP checks, not actual Claude Code, Codex, Cursor, Windsurf or desktop connector runs. Desktop/CLI client checks remain pending. The separate OpenAI Responses API run below passed. The official MCP Registry entry is prepared but not submitted.
+These are direct JSON-RPC HTTP checks, not actual Claude Code, Codex, Cursor, Windsurf or desktop connector runs. Separate native CLI and user-performed desktop/hosted OAuth checks are recorded in [client verification](client-verification.md); their evidence is not inferred from these HTTP checks. The separate OpenAI Responses API run below passed. The official MCP Registry entry is prepared but not submitted.
 
 ## OpenAI Responses API verification
 

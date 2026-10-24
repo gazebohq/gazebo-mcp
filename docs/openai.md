@@ -2,7 +2,7 @@
 
 Connect Gazebo to OpenAI Codex using remote HTTP MCP and an agent bearer token. OpenAI's Responses API and ChatGPT web have separate setup and authentication requirements.
 
-On 25 October 2026, Gazebo passed a direct OpenAI Responses API test with `gpt-5.4-mini`: tool discovery, approval, identity, fictional-key retrieval, denials, audit pagination and revoked-token rejection. Codex CLI, IDE and ChatGPT web were not runtime-tested by that check.
+On 25 October 2026, Gazebo passed a direct OpenAI Responses API test with `gpt-5.4-mini`: tool discovery, approval, identity, fictional-key retrieval, denials, audit pagination and revoked-token rejection. That check does not establish Codex or ChatGPT compatibility. A separate native Codex CLI 0.164.0 app-server run on Linux passed discovery, identity, fictional-key retrieval, method denial, audit retrieval and revoked-token rejection. It did not exercise a model turn, OAuth or an IDE. ChatGPT web remains unverified.
 
 ## Codex CLI and IDE
 
@@ -18,7 +18,7 @@ The setting contains the environment variable's **name**, not its value. Do not 
 
 Run `codex mcp list` to check the configuration and use `/mcp` in the Codex terminal interface to inspect the connection. Ask it to call `get_identity` first, then verify that `get_credential` and `list_audit_events` are available.
 
-Gazebo uses a pre-issued agent token. `codex mcp login gazebo` is an OAuth flow and is not the setup path for this endpoint. See [OpenAI's current MCP configuration guide](https://developers.openai.com/codex/mcp).
+This guide and the verified Codex CLI run use a pre-issued agent token. `codex mcp login gazebo` is a separate OAuth flow: Gazebo implements discovery and public CIMD/DCR clients, but Codex OAuth has not been verified. Do not substitute it for this tested manual-token setup without testing. See [OpenAI's current MCP configuration guide](https://developers.openai.com/codex/mcp).
 
 ## OpenAI Responses API
 
@@ -47,7 +47,7 @@ Only enable `get_credential` after you understand the trust boundary. OpenAI's i
 
 Do not paste Codex's TOML into ChatGPT web or assume that a ChatGPT subscription provides the same MCP configuration controls. OpenAI's current hosted plugin documentation expects OAuth 2.1 for authenticated MCP servers.
 
-Gazebo's hosted MCP endpoint currently accepts pre-issued agent bearer tokens and does not implement MCP OAuth discovery. Treat authenticated ChatGPT web/plugin integration as **not verified and not supported by these instructions**. Account controls and product versions can change; see [OpenAI's authentication guide](https://developers.openai.com/plugins/build/auth).
+Gazebo's hosted MCP endpoint implements OAuth discovery, public CIMD/DCR clients, S256 PKCE authorization codes and explicit key approval, as well as manual agent tokens. Authenticated ChatGPT web/plugin integration remains **not runtime-verified and is not covered by these instructions**; implemented OAuth is not proof of every client's interoperability. Account controls and product versions can change; see [OpenAI's authentication guide](https://developers.openai.com/plugins/build/auth).
 
 ## Safe verification
 
