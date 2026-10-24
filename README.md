@@ -110,7 +110,7 @@ url = "https://app.gazebohq.com/api/mcp"
 bearer_token_env_var = "GAZEBO_AGENT_TOKEN"
 ```
 
-Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. These examples are source-reviewed, not vendor-client runtime verification.
+Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. Codex configuration is source-reviewed but not runtime-tested. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
 
 ### Claude Code and Claude Desktop
 
