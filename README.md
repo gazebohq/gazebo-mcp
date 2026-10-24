@@ -1,6 +1,6 @@
 # Gazebo MCP
 
-Scoped credential access for AI agents via the Model Context Protocol, with auditable credential-access attempts and immediate revocation.
+Credential retrieval for AI agents via the Model Context Protocol, with scoped identities, audit events and revocable future access.
 
 Gazebo hosts the MCP server. You do **not** need to install or run a local Gazebo server.
 
@@ -14,9 +14,9 @@ Gazebo hosts the MCP server. You do **not** need to install or run a local Gazeb
 
 ## Why Gazebo
 
-Long-lived credentials should not be copied into every agent's configuration. Gazebo gives each agent an identity and a policy describing which services and HTTP methods it may access. The agent retrieves an approved credential only when it needs one, while credential-access attempts—including denials—are recorded in the audit trail.
+Long-lived credentials should not be copied into every agent's configuration. Gazebo gives each agent an identity and a policy describing which service credentials it may retrieve and the declared HTTP methods permitted for retrieval. Provider key permissions, not Gazebo, govern subsequent API calls. The agent retrieves an approved credential only when it needs one, while credential-access attempts—including denials—are recorded in the audit trail.
 
-The credential value is delivered to the MCP client or agent. Treat it as ephemeral: do not persist it in files, environment variables, logs, prompts, transcripts, or long-lived memory.
+The actual provider credential is delivered to the MCP client or agent runtime and can be accessed by its host. Cloud connectors, gateways and model providers may receive it and may retain tool output according to their settings. Treat it as ephemeral where possible and do not deliberately persist it. Revoking Gazebo access blocks future retrieval; rotate or revoke the provider key to invalidate copies already received.
 
 ## Available tools
 
@@ -40,7 +40,7 @@ get_identity()
 
 ### `get_credential`
 
-Retrieves an active credential for an allowed service and intended HTTP method. Every credential-access attempt is audited before a secret is released.
+Retrieves an active credential for an allowed service and intended HTTP method. Valid credential-retrieval attempts are audited before a secret is released. Authentication and malformed-request failures are not credential-access events. Audit persistence failure blocks release.
 
 | Parameter | Type | Required | Description |
 |---|---|---:|---|
@@ -91,7 +91,7 @@ Cursor currently supports project configuration in `.cursor/mcp.json`:
     "gazebo": {
       "url": "https://app.gazebohq.com/api/mcp",
       "headers": {
-        "Authorization": "Bearer <your-agent-token>"
+        "Authorization": "Bearer ${env:GAZEBO_AGENT_TOKEN}"
       }
     }
   }
@@ -99,6 +99,18 @@ Cursor currently supports project configuration in `.cursor/mcp.json`:
 ```
 
 Do not commit a real agent token. Prefer the current client-supported secret or environment-variable mechanism where available.
+
+### OpenAI Codex and Responses API
+
+Codex supports remote HTTP MCP using an environment-based bearer token:
+
+```toml
+[mcp_servers.gazebo]
+url = "https://app.gazebohq.com/api/mcp"
+bearer_token_env_var = "GAZEBO_AGENT_TOKEN"
+```
+
+Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. These examples are source-reviewed, not vendor-client runtime verification.
 
 ### Claude Code and Claude Desktop
 
@@ -124,7 +136,15 @@ See [docs/client-verification.md](docs/client-verification.md) for the release-t
 
 Gazebo supports MCP protocol versions `2024-11-05`, `2025-03-26`, and `2025-06-18`. Future version requests negotiate to `2025-06-18`.
 
-The endpoint is stateless, JSON-only Streamable HTTP over `POST`. Gazebo does not claim support for `GET`, SSE, sessions, or server streaming.
+The endpoint is stateless, JSON-only Streamable HTTP over `POST`. Accepted notifications return HTTP 202 with no body. GET/DELETE return HTTP 405 with Allow: POST. Unsupported explicit MCP-Protocol-Version headers return HTTP 400. Native clients may omit Origin; untrusted explicit Origins return HTTP 403. Responses use Cache-Control: no-store. Gazebo does not claim SSE, sessions, or server streaming.
+
+Credential denials and missing keys use HTTP 200 with result.isError: true, not REST-style 403/404. Inspect the tool result as well as HTTP status.
+
+## Readiness and registry status
+
+Authenticated production protocol checks passed using an existing fictional-key fixture, including retrieval, denial, audit pagination and revoked-token rejection. See [production verification](docs/production-verification.md). This is not a vendor-client compatibility claim.
+
+The remote-only [server.json](server.json) passes the official registry schema. It has not been submitted. Real-client results and publisher authentication remain required; see [submission checklist](docs/registry-submission.md).
 
 ## Support and security
 
