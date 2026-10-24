@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.gazebohq/gazebo",
+  "title": "Gazebo",
+  "description": "Credential retrieval for AI agents, with scoped identities, audit events and revocable access.",
+  "version": "1.0.0",
+  "websiteUrl": "https://gazebohq.com/docs/mcp",
+  "icons": [
+    {
+      "src": "https://gazebohq.com/favicon.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://app.gazebohq.com/api/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Enter Bearer followed by your Gazebo agent token. Create one at https://app.gazebohq.com/agents. Account API tokens are not accepted.",
+          "isRequired": true,
+          "isSecret": true,
+          "placeholder": "Bearer <your-agent-token>"
+        }
+      ]
+    }
+  ]
+}
