@@ -23,7 +23,7 @@ Use a dedicated test agent with:
 
 ## Required checks
 
-Run each check in Cursor, Claude Code, Claude Desktop, and Windsurf.
+Run each check in Cursor, Claude Code, OpenAI Codex, Claude Desktop, and Windsurf. Track OpenAI Responses API separately as a cloud runtime; ChatGPT web authenticated plugins currently require OAuth and are not covered by Gazebo's bearer-token setup.
 
 | Check | Expected result |
 |---|---|
@@ -57,8 +57,24 @@ Do not retain agent tokens, retrieved credentials, authorization headers, or unr
 
 Directory submission can begin when:
 
-- all four current stable clients complete identity and tool-discovery checks;
+- the current stable clients listed above complete identity and tool-discovery checks;
 - credential access and audit retrieval pass in every client that supports remote HTTP servers with bearer headers;
 - any unsupported client is documented accurately rather than worked around with an unverified adapter;
 - repository instructions match the tested client releases;
 - no listing copy claims GET, SSE, sessions, or server streaming.
+
+## Current evidence
+
+As of 25 October 2026, vendor documentation is reviewed, but no actual vendor-client run is recorded. Do not turn production HTTP smoke-test results into client passes.
+
+| Client | Runtime result |
+|---|---|
+| Cursor | Pending |
+| Claude Code | Pending |
+| OpenAI Codex CLI / IDE | Pending |
+| Claude Desktop remote connector | Pending; verify account controls and cloud hosting |
+| Windsurf / current Cascade product | Pending; verify exact product/version because vendor docs redirect |
+| OpenAI Responses API | Pending; separate API account and cloud-runtime test |
+| ChatGPT web / hosted plugins | Not supported by current setup; OAuth is not implemented |
+
+Use only fictional keys for verification. Cloud services and gateways can receive tool results; do not describe every desktop interface as local execution.
