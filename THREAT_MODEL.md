@@ -76,3 +76,5 @@ A workflow, Action, or compromised maintainer could gain write access or publish
 ## Release gate
 
 Gazebo must not be submitted to MCP directories until current stable Cursor, Claude Code, Claude Desktop, and Windsurf releases have been tested according to `docs/client-verification.md`. Unsupported client behavior must be documented rather than hidden behind an unverified adapter.
+
+Current evidence is narrower than this original all-client gate: Claude Code tool execution, legacy Windsurf/Cascade and several per-client cases remain unverified. Devin-hosted execution is recorded separately. An explicit maintainer decision is required to replace this gate with a verified-path-only submission policy; do not silently treat missing cases as passed.

@@ -27,6 +27,6 @@ Gazebo will acknowledge a valid private report, assess severity and scope, and c
 
 The `get_credential` tool delivers a plaintext credential to the MCP client or agent. Clients and integrations must treat the value as ephemeral and must not persist it in files, environment variables, logs, prompts, transcripts, or long-lived memory.
 
-If a credential or agent token is exposed, revoke or rotate it immediately in Gazebo before reporting the incident. Do not wait for triage before containing an active exposure.
+If a Gazebo agent token or OAuth grant is exposed, revoke its Gazebo access immediately. If a provider credential has been exposed, rotate or revoke the key at its provider: disconnecting Gazebo cannot invalidate previously returned copies. Update the stored credential afterward as needed. Do not wait for triage before containing an active exposure.
 
 See [THREAT_MODEL.md](THREAT_MODEL.md) for repository trust boundaries and required guarantees.

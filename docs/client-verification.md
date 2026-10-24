@@ -6,7 +6,7 @@ Complete this matrix against current stable client releases before submitting Ga
 
 - Endpoint: `https://app.gazebohq.com/api/mcp`
 - Header: `Authorization: Bearer <agent-token>`
-- Authentication: Gazebo agent bearer token only
+- Authentication: scoped agent bearer token, or MCP OAuth with explicit selected-key approval
 - Transport: Stateless, JSON-only Streamable HTTP over `POST`
 
 Never commit real tokens, credentials, response secrets, or unredacted transcripts.
@@ -23,7 +23,7 @@ Use a dedicated test agent with:
 
 ## Required checks
 
-Run each check in Cursor, Claude Code, Claude Desktop, and Windsurf.
+Run each check in Cursor, Claude Code, OpenAI Codex, Claude Desktop, and Windsurf. Track OpenAI Responses API separately as a cloud runtime; ChatGPT web is a separate hosted client; the Claude OAuth pass does not establish its compatibility.
 
 | Check | Expected result |
 |---|---|
@@ -31,7 +31,7 @@ Run each check in Cursor, Claude Code, Claude Desktop, and Windsurf.
 | Tool discovery | `get_identity`, `get_credential`, and `list_audit_events` are visible |
 | `get_identity` | Returns the intended agent identity and expected policy without a credential |
 | Allowed credential access | `get_credential` succeeds for the test service and allowed method |
-| Default key selection | Omitting `key_name` returns one deterministic primary active credential |
+| Default key selection | Manual agent tokens: omitting `key_name` selects one primary credential. OAuth: require an approved named key instead. |
 | Named credential access | A valid `key_name` returns only that active credential |
 | Denied method | Returns a structured denial and creates a denied audit event |
 | Audit retrieval | `list_audit_events` finds the success and denial; cursor pagination works |
@@ -57,8 +57,51 @@ Do not retain agent tokens, retrieved credentials, authorization headers, or unr
 
 Directory submission can begin when:
 
-- all four current stable clients complete identity and tool-discovery checks;
+- the current stable clients listed above complete identity and tool-discovery checks;
 - credential access and audit retrieval pass in every client that supports remote HTTP servers with bearer headers;
 - any unsupported client is documented accurately rather than worked around with an unverified adapter;
 - repository instructions match the tested client releases;
 - no listing copy claims GET, SSE, sessions, or server streaming.
+
+## Current evidence
+
+As of 25 October 2026, direct protocol and Responses API tests, native CLI checks, and user-performed Claude Desktop, Cursor Desktop and Devin-hosted OAuth runs provide the evidence below. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
+
+| Client | Runtime result |
+|---|---|
+| Cursor Desktop | macOS, 25 October 2026: DCR-based OAuth approval, three-tool discovery, identity, reported named fictional-key retrieval and reported rejection of a fresh request after the Gazebo revocation step. Exact version, audit-tool use, renewal, timed expiry and web/cloud runtime not verified. |
+| Claude Code | 2.1.310, Linux, 25 October 2026: authenticated MCP health passed; the same configuration no longer connected after token revocation. Tool execution not tested. |
+| OpenAI Codex CLI / IDE | CLI 0.164.0 app-server, Linux, 25 October 2026: discovery, identity, named fictional-key retrieval, method denial, audit retrieval and revoked-token rejection passed. No model turn, IDE or OAuth test. |
+| Claude Desktop remote connector | macOS, 25 October 2026: OAuth approval, three-tool discovery, identity, named credential retrieval, and authentication rejection after Gazebo-side grant revocation passed. Exact client version and audit-tool call not recorded; broader matrix incomplete. |
+| Devin hosted | 25 October 2026: Personal OAuth approval, three-tool discovery, identity, reported named fictional-key GET retrieval, audit retrieval showing the matching successful event, and reported fresh-request rejection requiring OAuth after the revocation step. Exact version, renewal, timed expiry and local desktop execution unverified. |
+| Legacy Windsurf / Cascade | Not tested; hosted Devin evidence is not evidence for older clients. |
+| OpenAI Responses API | Passed 25 October 2026 with gpt-5.4-mini: discovery, approval, identity, fictional-key access, policy denials, audit pagination and revoked-token failure; store:false |
+| ChatGPT web / hosted plugins | Not runtime-tested. MCP OAuth is implemented, but compatibility must be tested independently. |
+
+Use only fictional keys for verification. Cloud services and gateways can receive tool results; do not describe every desktop interface as local execution.
+
+## Claude Desktop evidence and limits
+
+Evidence is the maintainer’s screenshots from an actual production connection, not a mocked client. It used Sign in now, Claude’s published identity (CIMD), and Streamable HTTP. No expiry was selected. Claude reported successful named-key retrieval without displaying the value. After the grant was revoked in Gazebo, a fresh call displayed “Authentication required to use this tool” with a Connect action. The connector remained configured, and no reauthorization was approved during the check.
+
+The existing smoke-test service was used; this review did not inspect the credential plaintext. No secret values or account identifiers are retained here. This run does not prove expiry, refresh rotation, audit retrieval or every negative-policy case in Claude.
+
+## Automated native CLI evidence
+
+Claude Code 2.1.310 and Codex CLI 0.164.0 were run in isolated temporary homes on Linux against the production endpoint using a newly created, expiring dedicated test agent. The existing test credential was compared to the expected fictional value before passing it to either client. No unrelated project secrets were inherited by the vendor processes.
+
+Claude Code `mcp list` reported a connected authenticated server, then no connected server after revocation. This is a health check, not proof of credential tool execution in Claude Code.
+
+Codex’s native app-server initialized an ephemeral thread and exposed all three Gazebo tools. Its `mcpServer/tool/call` interface successfully executed identity, named retrieval and audit retrieval, correctly returned a tool error for a disallowed DELETE method, and rejected fresh credential retrieval after the agent token was revoked. No model API request was needed; this proves the native client MCP path, not a model-driven task or Codex IDE behavior. OAuth and audit pagination were not tested in these CLI runs.
+
+Temporary agents were removed and temporary local credential/configuration directories deleted after each attempt. No token, provider-key value or raw tool result was retained in this report.
+
+## Cursor Desktop evidence and limits
+
+The maintainer used the URL-only remote configuration on macOS. The first attempt failed because Gazebo lacked dynamic client registration; after DCR was added and published, Authenticate opened Gazebo's selected-key approval and all three tools became available. The session returned identity and reported successful named retrieval of the fictional fixture. Cursor initially requested manual tool approval because an earlier identity-only instruction conflicted with retrieval; the maintainer approved the intended retrieval call. After the instruction to revoke the grant in Gazebo, the session reported a fresh request rejected, without reconnecting. Screenshots show client summaries, not the raw final server error or independent inspection of the key. No expiry was selected; the exact app version, audit retrieval and refresh were not recorded.
+
+## Devin hosted evidence and limits
+
+The maintainer configured HTTP, Personal OAuth, authorization code, Automatic execution from Devin's servers and the discovered resource. No client ID, client secret or authorization header was manually supplied. The approval used the existing fictional-key fixture. Web validation discovered all three tools but only displayed schemas. A hosted agent session returned scoped identity, reported successful named GET retrieval and called list_audit_events, returning the successful event under the same connection. After the Gazebo revocation instruction, a fresh request was reported rejected with OAuth required and no value returned; no new authorization was approved.
+
+This evidence consists of production UI screenshots and agent summaries, not raw token exchanges or an independent inspection of the key. The connection had no expiry. Exact client version, timed expiry, refresh rotation, manual-token setup and local desktop execution were not tested. The initial session was blocked by free credits; later hosted calls executed successfully. Personal authentication is not a guarantee that other organization members cannot interact with a session.

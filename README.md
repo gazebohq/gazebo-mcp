@@ -1,22 +1,22 @@
 # Gazebo MCP
 
-Scoped credential access for AI agents via the Model Context Protocol, with auditable credential-access attempts and immediate revocation.
+Credential retrieval for AI agents via the Model Context Protocol, with scoped identities, audit events and revocable future access.
 
 Gazebo hosts the MCP server. You do **not** need to install or run a local Gazebo server.
 
 - **Endpoint:** `https://app.gazebohq.com/api/mcp`
-- **Authentication:** `Authorization: Bearer <agent-token>`
+- **Authentication:** MCP OAuth (CIMD or Dynamic Client Registration) with explicit key approval, or `Authorization: Bearer <agent-token>`
 - **Transport:** Stateless, JSON-only Streamable HTTP over `POST`
 - **Create an agent token:** [app.gazebohq.com/agents](https://app.gazebohq.com/agents)
 - **Documentation:** [gazebohq.com/docs/mcp](https://gazebohq.com/docs/mcp)
 
-> Gazebo's MCP endpoint accepts scoped **agent bearer tokens only**. Account API tokens and browser sessions are rejected.
+> Gazebo's MCP endpoint accepts scoped agent bearer tokens and resource-bound MCP OAuth access tokens. Account API tokens and browser sessions are rejected.
 
 ## Why Gazebo
 
-Long-lived credentials should not be copied into every agent's configuration. Gazebo gives each agent an identity and a policy describing which services and HTTP methods it may access. The agent retrieves an approved credential only when it needs one, while credential-access attempts—including denials—are recorded in the audit trail.
+Long-lived credentials should not be copied into every agent's configuration. Gazebo gives each agent an identity and a policy describing which service credentials it may retrieve and the declared HTTP methods permitted for retrieval. Provider key permissions, not Gazebo, govern subsequent API calls. The agent retrieves an approved credential only when it needs one, while credential-access attempts—including denials—are recorded in the audit trail.
 
-The credential value is delivered to the MCP client or agent. Treat it as ephemeral: do not persist it in files, environment variables, logs, prompts, transcripts, or long-lived memory.
+The actual provider credential is delivered to the MCP client or agent runtime and can be accessed by its host. Cloud connectors, gateways and model providers may receive it and may retain tool output according to their settings. Treat it as ephemeral where possible and do not deliberately persist it. Revoking Gazebo access blocks future retrieval; rotate or revoke the provider key to invalidate copies already received.
 
 ## Available tools
 
@@ -40,17 +40,17 @@ get_identity()
 
 ### `get_credential`
 
-Retrieves an active credential for an allowed service and intended HTTP method. Every credential-access attempt is audited before a secret is released.
+Retrieves an active credential for an allowed service and intended HTTP method. Valid credential-retrieval attempts are audited before a secret is released. Authentication and malformed-request failures are not credential-access events. Audit persistence failure blocks release.
 
 | Parameter | Type | Required | Description |
 |---|---|---:|---|
 | `service` | string | Yes | Service slug, such as `github` or `stripe` |
 | `method` | string | Yes | Intended method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE` |
-| `key_name` | string | No | Named credential; omit it to return exactly one deterministic primary active credential |
+| `key_name` | string | For OAuth; optional for manual agent tokens | OAuth requires an explicitly approved named key. Manual agent tokens may omit it to select one deterministic primary active credential. |
 
 ```text
-get_credential({ service: "github", method: "GET" })
-→ "<ephemeral-service-credential>"
+get_credential({ service: "github", key_name: "token", method: "GET" })
+→ "<actual-stored-provider-key>"
 ```
 
 Do not retry a denied request until the user changes the policy or you choose an allowed method.
@@ -68,13 +68,13 @@ Returns recent credential-access attempts for the authenticated agent.
 ## Recommended flow
 
 1. Call `get_identity` to verify the authenticated agent and policy.
-2. Call `get_credential` with the service and actual intended HTTP method.
+2. Call `get_credential` with the service, approved key name and actual intended HTTP method. OAuth requires the approved key name.
 3. Use the returned credential for the immediate operation, then discard it.
 4. Optionally call `list_audit_events` to verify the access event.
 
 ## Client configuration
 
-Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. Every client needs the same two values:
+Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
 ```text
 URL: https://app.gazebohq.com/api/mcp
@@ -83,7 +83,15 @@ Authorization: Bearer <your-agent-token>
 
 ### Cursor
 
-Cursor currently supports project configuration in `.cursor/mcp.json`:
+For the tested desktop OAuth path, add the URL to project `.cursor/mcp.json` or global `~/.cursor/mcp.json`:
+
+```json
+{"mcpServers":{"gazebo":{"url":"https://app.gazebohq.com/api/mcp"}}}
+```
+
+Use Cursor's Authenticate/connect action. Gazebo supports public dynamic registration (DCR); registration alone creates no access. Sign in, select only the keys to share, choose an access deadline and approve. OAuth retrieval must name the approved `key_name`. Desktop and cloud/web sign-ins may differ.
+
+For the manual agent-token alternative:
 
 ```json
 {
@@ -91,7 +99,7 @@ Cursor currently supports project configuration in `.cursor/mcp.json`:
     "gazebo": {
       "url": "https://app.gazebohq.com/api/mcp",
       "headers": {
-        "Authorization": "Bearer <your-agent-token>"
+        "Authorization": "Bearer ${env:GAZEBO_AGENT_TOKEN}"
       }
     }
   }
@@ -100,13 +108,40 @@ Cursor currently supports project configuration in `.cursor/mcp.json`:
 
 Do not commit a real agent token. Prefer the current client-supported secret or environment-variable mechanism where available.
 
-### Claude Code and Claude Desktop
+### OpenAI Codex and Responses API
 
-Claude Code and Claude Desktop have separate MCP setup surfaces. Configure a remote HTTP MCP server using the canonical endpoint and authorization header above; do not reuse one product's configuration instructions for the other. Follow Anthropic's current documentation for the installed release.
+Codex supports remote HTTP MCP using an environment-based bearer token:
 
-### Windsurf
+```toml
+[mcp_servers.gazebo]
+url = "https://app.gazebohq.com/api/mcp"
+bearer_token_env_var = "GAZEBO_AGENT_TOKEN"
+```
 
-Configure a remote MCP server using the canonical endpoint and authorization header above. Windsurf's configuration field names and locations vary by release, so follow Windsurf's current documentation rather than assuming a particular `url` or `serverUrl` field.
+Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. Codex CLI 0.164.0 was verified on Linux through its native app-server MCP interface: discovery, identity, fictional-key retrieval, method denial, audit retrieval and revoked-token rejection. This was a programmatic client run, not a model-driven task or IDE test. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
+
+### Claude Desktop
+
+In Settings → Connectors, add a custom connector:
+
+- URL: `https://app.gazebohq.com/api/mcp`
+- Authentication: **Sign in now**
+- OAuth client: **Use Claude’s published identity**
+- Transport: **Streamable HTTP**
+
+Click Add, then Connect. Sign into Gazebo, select only the keys to share, choose an expiry and approve. In Claude, call Get identity first. Use fictional credentials for your first retrieval test. Revoke the grant in Gazebo to block further retrieval. A key already returned remains accessible to the runtime/host until invalidated at the provider.
+
+### Claude Code
+
+Claude Code has a separate configuration surface. Configure remote HTTP with the canonical endpoint and agent authorization header above; follow Anthropic’s current documentation for your release. Claude Code 2.1.310 on Linux passed authenticated MCP connection health and stopped connecting after token revocation. Its tool-execution flow remains unverified.
+
+### Devin hosted and legacy Windsurf
+
+In Devin's custom MCP settings use HTTP, the canonical endpoint, OAuth and Personal access. Leave execution at Automatic (Devin servers), grant type Authorization code, client ID/secret blank, scope `gazebo.credentials.read offline_access`, resource Default (discovered), and headers empty. Leave the supplied callback URL unchanged. Install and connect, then approve selected keys in Gazebo. Personal authentication does not guarantee session privacy; other organization members may interact with sessions.
+
+The web **Test tools** panel validates the server and displays discovered schemas; the tested panel does not execute calls. Use **Use MCP** to start a hosted session, which needs available agent usage quota. Web and Desktop settings differ. Start with `get_identity`, then use a fictional key for named retrieval and verify the audit event. Revoke the grant in Gazebo and make a fresh request without reconnecting.
+
+This hosted path passed the checks described in the verification matrix. It does not verify local desktop execution or legacy Windsurf/Cascade. Legacy clients may support manual bearer headers, but follow documentation for the installed product/version instead of assuming a configuration path.
 
 ## Verification checklist
 
@@ -124,7 +159,15 @@ See [docs/client-verification.md](docs/client-verification.md) for the release-t
 
 Gazebo supports MCP protocol versions `2024-11-05`, `2025-03-26`, and `2025-06-18`. Future version requests negotiate to `2025-06-18`.
 
-The endpoint is stateless, JSON-only Streamable HTTP over `POST`. Gazebo does not claim support for `GET`, SSE, sessions, or server streaming.
+The endpoint is stateless, JSON-only Streamable HTTP over `POST`. Accepted notifications return HTTP 202 with no body. Unauthenticated GET requests return HTTP 401 with OAuth discovery information. Authenticated GET and DELETE requests are not supported MCP operations. Unsupported explicit MCP-Protocol-Version headers return HTTP 400. Native clients may omit Origin; untrusted explicit Origins return HTTP 403. Responses use Cache-Control: no-store. Gazebo does not claim SSE, sessions, or server streaming.
+
+Credential denials and missing keys use HTTP 200 with result.isError: true, not REST-style 403/404. Inspect the tool result as well as HTTP status.
+
+## Readiness and registry status
+
+Authenticated production protocol checks passed using an existing fictional-key fixture, including retrieval, denial, audit pagination and revoked-token rejection. See [production verification](docs/production-verification.md). Separate user-performed Claude Desktop, Cursor Desktop and Devin-hosted OAuth tests passed approval, tool discovery, identity, named retrieval and reported rejection after the revocation step. Devin also returned the matching successful audit event. See the client verification matrix for precise evidence and limits.
+
+The remote-only [server.json](server.json) passes the official registry schema. It has not been submitted. Real-client results and publisher authentication remain required; see [submission checklist](docs/registry-submission.md).
 
 ## Support and security
 
