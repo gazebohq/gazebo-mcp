@@ -65,7 +65,7 @@ Directory submission can begin when:
 
 ## Current evidence
 
-As of 25 October 2026, vendor documentation is reviewed, but no actual vendor-client run is recorded. Do not turn production HTTP smoke-test results into client passes.
+As of 25 October 2026, vendor documentation is reviewed and a direct OpenAI Responses API run passed. Desktop/CLI client runs remain pending. Do not turn production HTTP smoke-test results into client passes.
 
 | Client | Runtime result |
 |---|---|
@@ -74,7 +74,7 @@ As of 25 October 2026, vendor documentation is reviewed, but no actual vendor-cl
 | OpenAI Codex CLI / IDE | Pending |
 | Claude Desktop remote connector | Pending; verify account controls and cloud hosting |
 | Windsurf / current Cascade product | Pending; verify exact product/version because vendor docs redirect |
-| OpenAI Responses API | Pending; separate API account and cloud-runtime test |
+| OpenAI Responses API | Passed 25 October 2026 with gpt-5.4-mini: discovery, approval, identity, fictional-key access, policy denials, audit pagination and revoked-token failure; store:false |
 | ChatGPT web / hosted plugins | Not supported by current setup; OAuth is not implemented |
 
 Use only fictional keys for verification. Cloud services and gateways can receive tool results; do not describe every desktop interface as local execution.
