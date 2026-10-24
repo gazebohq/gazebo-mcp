@@ -110,7 +110,7 @@ url = "https://app.gazebohq.com/api/mcp"
 bearer_token_env_var = "GAZEBO_AGENT_TOKEN"
 ```
 
-Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. Codex configuration is source-reviewed but not runtime-tested. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
+Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. Codex CLI 0.164.0 was verified on Linux through its native app-server MCP interface: discovery, identity, fictional-key retrieval, method denial, audit retrieval and revoked-token rejection. This was a programmatic client run, not a model-driven task or IDE test. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
 
 ### Claude Desktop
 
@@ -125,7 +125,7 @@ Click Add, then Connect. Sign into Gazebo, select only the keys to share, choose
 
 ### Claude Code
 
-Claude Code has a separate configuration surface. Configure remote HTTP with the canonical endpoint and agent authorization header above; follow Anthropic’s current documentation for your release. The Claude Desktop verification does not establish Claude Code compatibility.
+Claude Code has a separate configuration surface. Configure remote HTTP with the canonical endpoint and agent authorization header above; follow Anthropic’s current documentation for your release. Claude Code 2.1.310 on Linux passed authenticated MCP connection health and stopped connecting after token revocation. Its tool-execution flow remains unverified.
 
 ### Windsurf
 

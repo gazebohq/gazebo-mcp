@@ -70,8 +70,8 @@ As of 25 October 2026, a direct OpenAI Responses API run and a user-performed Cl
 | Client | Runtime result |
 |---|---|
 | Cursor | Pending |
-| Claude Code | Pending |
-| OpenAI Codex CLI / IDE | Pending |
+| Claude Code | 2.1.310, Linux, 25 October 2026: authenticated MCP health passed; the same configuration no longer connected after token revocation. Tool execution not tested. |
+| OpenAI Codex CLI / IDE | CLI 0.164.0 app-server, Linux, 25 October 2026: discovery, identity, named fictional-key retrieval, method denial, audit retrieval and revoked-token rejection passed. No model turn, IDE or OAuth test. |
 | Claude Desktop remote connector | macOS, 25 October 2026: OAuth approval, three-tool discovery, identity, named credential retrieval, and authentication rejection after Gazebo-side grant revocation passed. Exact client version and audit-tool call not recorded; broader matrix incomplete. |
 | Windsurf / current Cascade product | Pending; verify exact product/version because vendor docs redirect |
 | OpenAI Responses API | Passed 25 October 2026 with gpt-5.4-mini: discovery, approval, identity, fictional-key access, policy denials, audit pagination and revoked-token failure; store:false |
@@ -84,3 +84,13 @@ Use only fictional keys for verification. Cloud services and gateways can receiv
 Evidence is the maintainer’s screenshots from an actual production connection, not a mocked client. It used Sign in now, Claude’s published identity (CIMD), and Streamable HTTP. No expiry was selected. Claude reported successful named-key retrieval without displaying the value. After the grant was revoked in Gazebo, a fresh call displayed “Authentication required to use this tool” with a Connect action. The connector remained configured, and no reauthorization was approved during the check.
 
 The existing smoke-test service was used; this review did not inspect the credential plaintext. No secret values or account identifiers are retained here. This run does not prove expiry, refresh rotation, audit retrieval or every negative-policy case in Claude.
+
+## Automated native CLI evidence
+
+Claude Code 2.1.310 and Codex CLI 0.164.0 were run in isolated temporary homes on Linux against the production endpoint using a newly created, expiring dedicated test agent. The existing test credential was compared to the expected fictional value before passing it to either client. No unrelated project secrets were inherited by the vendor processes.
+
+Claude Code `mcp list` reported a connected authenticated server, then no connected server after revocation. This is a health check, not proof of credential tool execution in Claude Code.
+
+Codex’s native app-server initialized an ephemeral thread and exposed all three Gazebo tools. Its `mcpServer/tool/call` interface successfully executed identity, named retrieval and audit retrieval, correctly returned a tool error for a disallowed DELETE method, and rejected fresh credential retrieval after the agent token was revoked. No model API request was needed; this proves the native client MCP path, not a model-driven task or Codex IDE behavior. OAuth and audit pagination were not tested in these CLI runs.
+
+Temporary agents were removed and temporary local credential/configuration directories deleted after each attempt. No token, provider-key value or raw tool result was retained in this report.
