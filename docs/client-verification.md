@@ -6,7 +6,7 @@ Complete this matrix against current stable client releases before submitting Ga
 
 - Endpoint: `https://app.gazebohq.com/api/mcp`
 - Header: `Authorization: Bearer <agent-token>`
-- Authentication: Gazebo agent bearer token only
+- Authentication: scoped agent bearer token, or MCP OAuth with explicit selected-key approval
 - Transport: Stateless, JSON-only Streamable HTTP over `POST`
 
 Never commit real tokens, credentials, response secrets, or unredacted transcripts.
@@ -23,7 +23,7 @@ Use a dedicated test agent with:
 
 ## Required checks
 
-Run each check in Cursor, Claude Code, OpenAI Codex, Claude Desktop, and Windsurf. Track OpenAI Responses API separately as a cloud runtime; ChatGPT web authenticated plugins currently require OAuth and are not covered by Gazebo's bearer-token setup.
+Run each check in Cursor, Claude Code, OpenAI Codex, Claude Desktop, and Windsurf. Track OpenAI Responses API separately as a cloud runtime; ChatGPT web is a separate hosted client; the Claude OAuth pass does not establish its compatibility.
 
 | Check | Expected result |
 |---|---|
@@ -31,7 +31,7 @@ Run each check in Cursor, Claude Code, OpenAI Codex, Claude Desktop, and Windsur
 | Tool discovery | `get_identity`, `get_credential`, and `list_audit_events` are visible |
 | `get_identity` | Returns the intended agent identity and expected policy without a credential |
 | Allowed credential access | `get_credential` succeeds for the test service and allowed method |
-| Default key selection | Omitting `key_name` returns one deterministic primary active credential |
+| Default key selection | Manual agent tokens: omitting `key_name` selects one primary credential. OAuth: require an approved named key instead. |
 | Named credential access | A valid `key_name` returns only that active credential |
 | Denied method | Returns a structured denial and creates a denied audit event |
 | Audit retrieval | `list_audit_events` finds the success and denial; cursor pagination works |
@@ -65,16 +65,22 @@ Directory submission can begin when:
 
 ## Current evidence
 
-As of 25 October 2026, vendor documentation is reviewed and a direct OpenAI Responses API run passed. Desktop/CLI client runs remain pending. Do not turn production HTTP smoke-test results into client passes.
+As of 25 October 2026, a direct OpenAI Responses API run and a user-performed Claude Desktop OAuth flow passed the checks listed below. Other desktop/CLI runs remain pending. Do not turn HTTP smoke tests or a single-client pass into universal compatibility.
 
 | Client | Runtime result |
 |---|---|
 | Cursor | Pending |
 | Claude Code | Pending |
 | OpenAI Codex CLI / IDE | Pending |
-| Claude Desktop remote connector | Pending; verify account controls and cloud hosting |
+| Claude Desktop remote connector | macOS, 25 October 2026: OAuth approval, three-tool discovery, identity, named credential retrieval, and authentication rejection after Gazebo-side grant revocation passed. Exact client version and audit-tool call not recorded; broader matrix incomplete. |
 | Windsurf / current Cascade product | Pending; verify exact product/version because vendor docs redirect |
 | OpenAI Responses API | Passed 25 October 2026 with gpt-5.4-mini: discovery, approval, identity, fictional-key access, policy denials, audit pagination and revoked-token failure; store:false |
-| ChatGPT web / hosted plugins | Not supported by current setup; OAuth is not implemented |
+| ChatGPT web / hosted plugins | Not runtime-tested. MCP OAuth is implemented, but compatibility must be tested independently. |
 
 Use only fictional keys for verification. Cloud services and gateways can receive tool results; do not describe every desktop interface as local execution.
+
+## Claude Desktop evidence and limits
+
+Evidence is the maintainer’s screenshots from an actual production connection, not a mocked client. It used Sign in now, Claude’s published identity (CIMD), and Streamable HTTP. No expiry was selected. Claude reported successful named-key retrieval without displaying the value. After the grant was revoked in Gazebo, a fresh call displayed “Authentication required to use this tool” with a Connect action. The connector remained configured, and no reauthorization was approved during the check.
+
+The existing smoke-test service was used; this review did not inspect the credential plaintext. No secret values or account identifiers are retained here. This run does not prove expiry, refresh rotation, audit retrieval or every negative-policy case in Claude.

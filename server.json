@@ -15,16 +15,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://app.gazebohq.com/api/mcp",
-      "headers": [
-        {
-          "name": "Authorization",
-          "description": "Enter Bearer followed by your Gazebo agent token. Create one at https://app.gazebohq.com/agents. Account API tokens are not accepted.",
-          "isRequired": true,
-          "isSecret": true,
-          "placeholder": "Bearer <your-agent-token>"
-        }
-      ]
+      "url": "https://app.gazebohq.com/api/mcp"
     }
   ]
 }
