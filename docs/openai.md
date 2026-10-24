@@ -2,7 +2,7 @@
 
 Connect Gazebo to OpenAI Codex using remote HTTP MCP and an agent bearer token. OpenAI's Responses API and ChatGPT web have separate setup and authentication requirements.
 
-These instructions were checked against vendor documentation on 25 October 2026. They are not a claim that these clients have completed runtime verification.
+On 25 October 2026, Gazebo passed a direct OpenAI Responses API test with `gpt-5.4-mini`: tool discovery, approval, identity, fictional-key retrieval, denials, audit pagination and revoked-token rejection. Codex CLI, IDE and ChatGPT web were not runtime-tested by that check.
 
 ## Codex CLI and IDE
 
