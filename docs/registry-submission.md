@@ -23,6 +23,12 @@ required by this listing. This does not make the endpoint unauthenticated:
 Gazebo still requires a valid MCP OAuth access token or scoped agent token.
 Manual bearer-token setup remains documented separately for clients that need it.
 
+## Readiness update — 6 November 2026
+
+Claude Code's macOS desktop Code-session OAuth path passed three-tool discovery, identity, reported named fictional-key retrieval, matching audit retrieval and fresh-request rejection after the Gazebo revocation step. See [client verification](client-verification.md#claude-code-desktop-evidence-and-limits) for evidence and limits. The earlier terminal/CLI run still covers connection health only. Legacy Windsurf/Cascade and remaining client-specific cases are unverified; the broader release gate has not been waived.
+
+This is a documentation evidence update, not a Registry submission. Publisher authentication and publication remain outstanding.
+
 ## Readiness update — 25 October 2026
 
 - The registry search returned no existing `io.github.gazebohq/gazebo` entry.

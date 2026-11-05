@@ -74,7 +74,7 @@ Returns recent credential-access attempts for the authenticated agent.
 
 ## Client configuration
 
-**Tested with Cursor Desktop, Claude Desktop, Devin, Codex CLI and the OpenAI Responses API.** See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
+**Tested with Cursor Desktop, Claude Desktop, Claude Code, Devin, Codex CLI and the OpenAI Responses API.** See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
 
 Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
@@ -135,7 +135,9 @@ Click Add, then Connect. Sign into Gazebo, select only the keys to share, choose
 
 ### Claude Code
 
-Claude Code has a separate configuration surface. Configure remote HTTP with the canonical endpoint and agent authorization header above; follow Anthropic’s current documentation for your release. Claude Code 2.1.310 on Linux passed authenticated MCP connection health and stopped connecting after token revocation. Its tool-execution flow remains unverified.
+In Claude's **Code** tab, start a local session in a separate test folder and open **+ → Connectors**. Add or reconnect Gazebo using the canonical endpoint, sign in with OAuth and approve only the service keys the connection needs. Start with get_identity; OAuth retrieval must name the approved key_name. This desktop connector has passed identity, fictional-key retrieval, matching audit retrieval and rejection after revocation. See the [compatibility guide](docs/client-verification.md#claude-code-desktop-evidence-and-limits) for the tested environment and limits.
+
+Terminal configuration is separate: configure remote HTTP with the canonical endpoint and agent authorization header above, following Anthropic's current documentation. The earlier Linux CLI run covered connection health only, not tool execution. Desktop OAuth results do not verify CLI behavior or local-only credential handling.
 
 ### Devin hosted and legacy Windsurf
 
