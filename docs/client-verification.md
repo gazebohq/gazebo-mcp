@@ -65,12 +65,13 @@ Directory submission can begin when:
 
 ## Current evidence
 
-As of 25 October 2026, direct protocol and Responses API tests, native CLI checks, and user-performed Claude Desktop, Cursor Desktop and Devin-hosted OAuth runs provide the evidence below. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
+As of 6 November 2026, direct protocol and Responses API tests, native CLI checks, and user-performed Claude Desktop, Claude Code desktop, Cursor Desktop and Devin-hosted OAuth runs provide the evidence below. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
 
 | Client | Runtime result |
 |---|---|
 | Cursor Desktop | macOS, 25 October 2026: DCR-based OAuth approval, three-tool discovery, identity, reported named fictional-key retrieval and reported rejection of a fresh request after the Gazebo revocation step. Exact version, audit-tool use, renewal, timed expiry and web/cloud runtime not verified. |
-| Claude Code | 2.1.310, Linux, 25 October 2026: authenticated MCP health passed; the same configuration no longer connected after token revocation. Tool execution not tested. |
+| Claude Code — terminal/CLI | 2.1.310, Linux, 25 October 2026: authenticated MCP health passed; the same configuration no longer connected after token revocation. CLI tool execution not tested. |
+| Claude Code — desktop Code session | macOS, 6 November 2026: OAuth approval, three-tool discovery, identity, reported named fictional-key GET retrieval, matching successful audit retrieval and fresh-request rejection after the Gazebo revocation step passed. Exact app version and raw final error unrecorded; terminal/CLI tool execution, renewal, timed expiry and marketplace-plugin installation unverified. |
 | OpenAI Codex CLI / IDE | CLI 0.164.0 app-server, Linux, 25 October 2026: discovery, identity, named fictional-key retrieval, method denial, audit retrieval and revoked-token rejection passed. No model turn, IDE or OAuth test. |
 | Claude Desktop remote connector | macOS, 25 October 2026: OAuth approval, three-tool discovery, identity, named credential retrieval, and authentication rejection after Gazebo-side grant revocation passed. Exact client version and audit-tool call not recorded; broader matrix incomplete. |
 | Devin hosted | 25 October 2026: Personal OAuth approval, three-tool discovery, identity, reported named fictional-key GET retrieval, audit retrieval showing the matching successful event, and reported fresh-request rejection requiring OAuth after the revocation step. Exact version, renewal, timed expiry and local desktop execution unverified. |
@@ -85,6 +86,16 @@ Use only fictional keys for verification. Cloud services and gateways can receiv
 Evidence is the maintainer’s screenshots from an actual production connection, not a mocked client. It used Sign in now, Claude’s published identity (CIMD), and Streamable HTTP. No expiry was selected. Claude reported successful named-key retrieval without displaying the value. After the grant was revoked in Gazebo, a fresh call displayed “Authentication required to use this tool” with a Connect action. The connector remained configured, and no reauthorization was approved during the check.
 
 The existing smoke-test service was used; this review did not inspect the credential plaintext. No secret values or account identifiers are retained here. This run does not prove expiry, refresh rotation, audit retrieval or every negative-policy case in Claude.
+
+## Claude Code desktop evidence and limits
+
+The maintainer used the **Code** tab in Claude's macOS desktop app, selected **This computer** and a separate empty test folder, then reconnected the existing Gazebo custom connector through OAuth. Only the fictional test service/key was approved, with no expiry. This is a Code-session test, distinct from normal Chat mode and the earlier terminal/CLI health check.
+
+Connector settings displayed all three tools with **Needs approval**, while the session also displayed an Auto-mode notice. This does not establish that every call prompted for manual approval. get_identity returned the approved service/key metadata. get_credential with an explicitly named fictional key and method GET reported success without displaying the value. list_audit_events returned one successful GET event matching that key and the same connection, timestamped 2026-11-05 22:19:19 UTC (6 November in Melbourne).
+
+After the Gazebo grant-revocation step, a fresh get_credential attempt visibly showed **Failed**. Claude reported that the connection had been invalidated and required reconnection, and stated it did not reconnect, sign in or approve new access.
+
+Evidence consists of the maintainer's production UI screenshots and agent summaries, not raw protocol traces or independent inspection of the key. The credential necessarily reached the runtime; a prompt not to display or save it is not a technical retention guarantee. Exact app version, CLI tool execution, timed expiry, renewal, policy-denial cases, audit pagination and marketplace installation were not tested in this run. A local Code session does not establish local-only handling by the account's remote connector. The broader directory release gate is unchanged by this evidence update.
 
 ## Automated native CLI evidence
 
