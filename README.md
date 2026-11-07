@@ -20,6 +20,16 @@ The actual provider credential is delivered to the MCP client or agent runtime a
 
 ## Available tools
 
+### Tool metadata and permissions
+
+| Tool | Display title | Read-only | Destructive | Idempotent | Open-world |
+|---|---|---|---|---|---|
+| `get_identity` | View connection identity and access | Yes | No | Yes | No |
+| `get_credential` | Retrieve a service credential | No | No | No | No |
+| `list_audit_events` | List credential-access events | Yes | No | Yes | No |
+
+Credential retrieval is not marked read-only: valid attempts create audit events and successful retrieval releases a sensitive value to the runtime and its host. It is not destructive because it does not modify or delete provider data. Open-world is false because the tools operate on Gazebo records, not arbitrary provider endpoints. These MCP hints describe behavior; they do not grant access, enforce client confirmation or guarantee safe handling of returned keys. Authentication, selected-key approval and release-policy checks remain unchanged. Clients may cache tool metadata and need a refresh after a hosted deployment.
+
 ### `get_identity`
 
 Returns the authenticated agent's identity and access policy. It does not return a credential and does not create a credential-access audit event.
@@ -40,7 +50,7 @@ get_identity()
 
 ### `get_credential`
 
-Retrieves an active credential for an allowed service and intended HTTP method. Valid credential-retrieval attempts are audited before a secret is released. Authentication and malformed-request failures are not credential-access events. Audit persistence failure blocks release.
+Retrieves an active credential for an allowed service and intended HTTP method. The method argument is checked against Gazebo's release policy; this tool does not execute that HTTP method or any provider request. Provider permissions govern subsequent use of the returned key. Valid credential-retrieval attempts are audited before a secret is released. Authentication and malformed-request failures are not credential-access events. Audit persistence failure blocks release.
 
 | Parameter | Type | Required | Description |
 |---|---|---:|---|
@@ -57,7 +67,7 @@ Do not retry a denied request until the user changes the policy or you choose an
 
 ### `list_audit_events`
 
-Returns recent credential-access attempts for the authenticated agent.
+Returns recent credential-access attempts for the authenticated agent, not subsequent provider API activity. No credential values are returned.
 
 | Parameter | Type | Required | Description |
 |---|---|---:|---|
