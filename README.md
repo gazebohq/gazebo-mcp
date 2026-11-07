@@ -84,7 +84,7 @@ Returns recent credential-access attempts for the authenticated agent, not subse
 
 ## Client configuration
 
-**Tested with Cursor Desktop, Claude Desktop, Claude Code, Devin, Codex CLI and the OpenAI Responses API.** See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
+**Tested paths include Cursor Desktop, normal Claude Chat, Claude Desktop, Claude Code’s desktop Code session, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded client test is the normal Claude Chat OAuth flow on 7 November 2026; coverage differs by runtime. Claude Code terminal/CLI tool execution, ChatGPT web and legacy Windsurf/Cascade remain unverified. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
 
 Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
@@ -132,7 +132,7 @@ bearer_token_env_var = "GAZEBO_AGENT_TOKEN"
 
 Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. Codex CLI 0.164.0 was verified on Linux through its native app-server MCP interface: discovery, identity, fictional-key retrieval, method denial, audit retrieval and revoked-token rejection. This was a programmatic client run, not a model-driven task or IDE test. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
 
-### Claude Desktop
+### Claude Desktop and normal Chat
 
 In Settings → Connectors, add a custom connector:
 
@@ -142,6 +142,8 @@ In Settings → Connectors, add a custom connector:
 - Transport: **Streamable HTTP**
 
 Click Add, then Connect. Sign into Gazebo, select only the keys to share, choose an expiry and approve. In Claude, call Get identity first. Use fictional credentials for your first retrieval test. Revoke the grant in Gazebo to block further retrieval. A key already returned remains accessible to the runtime/host until invalidated at the provider.
+
+Normal Chat OAuth was separately verified on 7 November 2026: identity, approved fictional-key retrieval, matching audit retrieval and rejection after grant revocation. This does not establish every Claude interface, platform or version. See the [Chat verification evidence](docs/client-verification.md#claude-chat-oauth-evidence-and-limits).
 
 ### Claude Code
 
