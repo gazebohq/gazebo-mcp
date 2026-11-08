@@ -84,7 +84,7 @@ Returns recent credential-access attempts for the authenticated agent, not subse
 
 ## Client configuration
 
-**Tested paths include Cursor Desktop, normal Claude Chat, Claude Desktop, Claude Code’s desktop Code session, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded client test is the normal Claude Chat OAuth flow on 7 November 2026; coverage differs by runtime. Claude Code terminal/CLI tool execution, ChatGPT web and legacy Windsurf/Cascade remain unverified. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
+**Tested paths include Cursor Desktop, normal Claude Chat, Claude Desktop, ChatGPT Business on web, Claude Code’s desktop Code session, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded client test is the ChatGPT Business web OAuth flow on 8 November 2026; coverage differs by runtime. Other ChatGPT plans and token refresh, Claude Code terminal/CLI tool execution and legacy Windsurf/Cascade remain unverified. The ChatGPT fictional-data test does not establish public-directory eligibility. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
 
 Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
@@ -130,7 +130,13 @@ url = "https://app.gazebohq.com/api/mcp"
 bearer_token_env_var = "GAZEBO_AGENT_TOKEN"
 ```
 
-Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT web limitations. Codex CLI 0.164.0 was verified on Linux through its native app-server MCP interface: discovery, identity, fictional-key retrieval, method denial, audit retrieval and revoked-token rejection. This was a programmatic client run, not a model-driven task or IDE test. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
+Set the variable in Codex's inherited environment. See [OpenAI setup](docs/openai.md) for configuration, identity-only Responses API guidance and ChatGPT Business web OAuth setup. Codex CLI 0.164.0 was verified on Linux through its native app-server MCP interface: discovery, identity, fictional-key retrieval, method denial, audit retrieval and revoked-token rejection. This was a programmatic client run, not a model-driven task or IDE test. A separate direct OpenAI Responses API test passed with fictional credentials; see the production verification report.
+
+### ChatGPT Business — web
+
+In ChatGPT web, open **Plugins → + → Add custom MCP server**, name it **Gazebo**, enter `https://app.gazebohq.com/api/mcp` and select **OAuth**. Leave advanced OAuth settings at their discovered defaults initially; no manual client secret was needed in the recorded test. Review the risk notice, create the connection and continue to Gazebo to approve only the intended service keys. Start with a nonfunctional fictional key and a bounded access deadline.
+
+The 8 November 2026 user-run test covered identity, named fictional-key GET retrieval and matching audit lookup. After Gazebo-side revocation, a fresh retrieval prompted reconnection. Other plans, native mobile, refresh and timed expiry remain unverified; this is not directory acceptance or approval to process real provider keys. See [ChatGPT setup](docs/openai.md#chatgpt-business-on-web) and [verification evidence](docs/client-verification.md#chatgpt-business-web-evidence-and-limits).
 
 ### Claude Desktop and normal Chat
 

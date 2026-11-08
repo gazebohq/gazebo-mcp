@@ -65,7 +65,7 @@ Directory submission can begin when:
 
 ## Current evidence
 
-As of 7 November 2026, direct protocol and Responses API tests, native CLI checks, and user-performed normal Claude Chat, Claude Desktop, Claude Code desktop, Cursor Desktop and Devin-hosted OAuth runs provide the evidence below. The latest date is the latest recorded client run, not a retest of every client. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
+As of 8 November 2026, direct protocol and Responses API tests, native CLI checks, and user-performed ChatGPT Business web, normal Claude Chat, Claude Desktop, Claude Code desktop, Cursor Desktop and Devin-hosted OAuth runs provide the evidence below. The latest date is the latest recorded client run, not a retest of every client. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
 
 | Client | Runtime result |
 |---|---|
@@ -78,9 +78,21 @@ As of 7 November 2026, direct protocol and Responses API tests, native CLI check
 | Devin hosted | 25 October 2026: Personal OAuth approval, three-tool discovery, identity, reported named fictional-key GET retrieval, audit retrieval showing the matching successful event, and reported fresh-request rejection requiring OAuth after the revocation step. Exact version, renewal, timed expiry and local desktop execution unverified. |
 | Legacy Windsurf / Cascade | Not tested; hosted Devin evidence is not evidence for older clients. |
 | OpenAI Responses API | Passed 25 October 2026 with gpt-5.4-mini: discovery, approval, identity, fictional-key access, policy denials, audit pagination and revoked-token failure; store:false |
-| ChatGPT web / hosted plugins | Not runtime-tested. MCP OAuth is implemented, but compatibility must be tested independently. |
+| ChatGPT Business — web | 8 November 2026: OAuth connection, identity, reported named fictional-key GET retrieval and matching successful audit lookup. Following Gazebo-side revocation, a fresh retrieval prompted reconnection. Maintainer-supplied screenshots; exact client version, raw token exchange and final HTTP status unrecorded. Other plans, native mobile, refresh, timed expiry, policy-denial cases and pagination unverified. |
 
 Use only fictional keys for verification. Cloud services and gateways can receive tool results; do not describe every desktop interface as local execution.
+
+## ChatGPT Business web evidence and limits
+
+On 8 November 2026, the maintainer used ChatGPT Business in a web browser and its **Plugins → + → Add custom MCP server** form. The canonical Gazebo endpoint was configured with OAuth, without manually supplied client credentials. Gazebo's consent screen approved only one named fictional service key and set a 24-hour access deadline. The other listed service key remained unchecked.
+
+The conversation reported successful get_identity with the intended approved service/key and expiry. It then reported successful named get_credential retrieval using method GET and a matching list_audit_events result for that connection and service. The credential was not printed, but it necessarily reached OpenAI's runtime and host. Not printing a value does not guarantee retention behavior. No raw credential values, account identifiers or tokens are retained here.
+
+Following the Gazebo revocation step, a fresh retrieval request without reconnecting displayed **Reconnect Gazebo**, with the generic message that the connection had expired. No new credential was shown. This is user-observed revoked-access behavior, not evidence that the selected 24-hour deadline elapsed or a capture of the exact HTTP status.
+
+Evidence consists of maintainer-supplied production consent and conversation screenshots, not raw tool/token traces or independent backend inspection. The screenshots do not identify CIMD versus DCR negotiation. Exact client version, operating system, refresh rotation, timed expiry, unapproved-key/method-denial cases and audit pagination were not established. Other plans and native mobile clients remain unverified. The conversation reported no downstream provider requests; no independent network trace was captured.
+
+Creating a custom connection is separate from public-directory submission. This private fictional-data test is not OpenAI approval, directory acceptance or approval to process real provider keys; directory eligibility remains unresolved. Revocation stops future retrieval, not use of keys already received.
 
 ## Claude Desktop evidence and limits
 
