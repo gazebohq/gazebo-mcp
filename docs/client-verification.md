@@ -2,12 +2,14 @@
 
 ## Proxy OAuth evidence
 
-Owner-reported Cursor desktop testing on 16 November 2026 against the
-development MCP endpoint verified a fresh public-client OAuth approval with
-the explicit proxy scope, Resend GET-only discovery, one
-successful GET /domains request and a matching Gazebo Logs event. Revoking that
-specific OAuth grant caused a fresh attempt with the previous references to
-report Unauthorized, without reauthorization.
+Cursor desktop testing on 16 November 2026 against the development MCP endpoint
+used a fresh public-client OAuth approval with the explicit
+`gazebo.proxy.execute` scope. The owner confirmed GET-only approval, discovery
+of one Resend connection with GET permission, one `GET /domains` request with
+gateway and provider HTTP 200, and a matching successful Gazebo Logs event.
+After that specific grant was revoked, a fresh call using the previous
+connection/profile references reported Unauthorized without reauthorization
+or a returned request ID.
 
 Evidence is user-shared client summaries and explicit log/revocation
 confirmation, not a raw protocol trace. The client did not expose a raw HTTP
@@ -15,15 +17,6 @@ status for the rejected attempt. Exact Cursor version, hosted execution,
 refresh rotation, timed expiry, other providers and production execution were
 not established. Retrieval evidence elsewhere in this document remains
 separate and does not certify proxy compatibility for those clients.
-
-The test was subsequently repeated on 16 November 2026 with a fresh public client
-and the renamed `gazebo.proxy.execute` purpose. The owner confirmed fresh
-GET-only approval, one Resend binding with GET only, one GET /domains with
-gateway and provider HTTP 200, and a matching successful Gazebo Logs event.
-Revoking that test grant caused a fresh call with the prior version-2 bindings
-to report Unauthorized with no returned request ID. This verifies the renamed
-scope in the tested development desktop flow; the evidence limitations above
-still apply. It does not establish production activation or refresh/timed expiry.
 
 ## Retrieval client verification
 
