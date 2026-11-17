@@ -1,5 +1,25 @@
 # MCP client verification
 
+## Proxy OAuth evidence
+
+Cursor desktop testing on 16 November 2026 against the development MCP endpoint
+used a fresh public-client OAuth approval with the explicit
+`gazebo.proxy.execute` scope. The owner confirmed GET-only approval, discovery
+of one Resend connection with GET permission, one `GET /domains` request with
+gateway and provider HTTP 200, and a matching successful Gazebo Logs event.
+After that specific grant was revoked, a fresh call using the previous
+connection/profile references reported Unauthorized without reauthorization
+or a returned request ID.
+
+Evidence is user-shared client summaries and explicit log/revocation
+confirmation, not a raw protocol trace. The client did not expose a raw HTTP
+status for the rejected attempt. Exact Cursor version, hosted execution,
+refresh rotation, timed expiry, other providers and production execution were
+not established. Retrieval evidence elsewhere in this document remains
+separate and does not certify proxy compatibility for those clients.
+
+## Retrieval client verification
+
 Complete this matrix against current stable client releases before submitting Gazebo to public MCP directories. Record the exact client version and test date in the pull request or issue that performs the verification.
 
 ## Canonical connection details

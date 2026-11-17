@@ -1,11 +1,11 @@
 # Gazebo MCP
 
-Credential retrieval for AI agents via the Model Context Protocol, with scoped identities, audit events and revocable future access.
+Credential retrieval or proxied service requests for AI agents via the Model Context Protocol, with explicit permissions, audit metadata and revocable future access.
 
 Gazebo hosts the MCP server. You do **not** need to install or run a local Gazebo server.
 
 - **Endpoint:** `https://app.gazebohq.com/api/mcp`
-- **Authentication:** MCP OAuth (CIMD or Dynamic Client Registration) with explicit key approval, or `Authorization: Bearer <agent-token>`
+- **Authentication:** MCP OAuth (CIMD or Dynamic Client Registration) with purpose-specific approval, or `Authorization: Bearer <agent-token>`
 - **Transport:** Stateless, JSON-only Streamable HTTP over `POST`
 - **Create an agent token:** [app.gazebohq.com/agents](https://app.gazebohq.com/agents)
 - **Documentation:** [gazebohq.com/docs/mcp](https://gazebohq.com/docs/mcp)
@@ -14,9 +14,48 @@ Gazebo hosts the MCP server. You do **not** need to install or run a local Gazeb
 
 ## Why Gazebo
 
+The credential-release model in this section describes **retrieval mode**.
+For forwarding without returning the provider key, see [proxy access](#choose-retrieval-or-proxy).
+
 Long-lived credentials should not be copied into every agent's configuration. Gazebo gives each agent an identity and a policy describing which service credentials it may retrieve and the declared HTTP methods permitted for retrieval. Provider key permissions, not Gazebo, govern subsequent API calls. The agent retrieves an approved credential only when it needs one, while credential-access attempts—including denials—are recorded in the audit trail.
 
 The actual provider credential is delivered to the MCP client or agent runtime and can be accessed by its host. Cloud connectors, gateways and model providers may receive it and may retain tool output according to their settings. Treat it as ephemeral where possible and do not deliberately persist it. Revoking Gazebo access blocks future retrieval; rotate or revoke the provider key to invalidate copies already received.
+
+## Choose retrieval or proxy
+
+Proxy access requires a proxy-enabled Gazebo deployment. Proxy tools are not
+advertised when proxy access is disabled.
+
+Access mode is fixed when a manual agent is created. OAuth connections request
+one purpose: `gazebo.credentials.read` for retrieval or
+`gazebo.proxy.execute` for proxy access. Do not request both together.
+Registration alone grants neither, and retrieval permission never authorizes
+proxy execution.
+
+- **Retrieval:** the existing credential tools release an approved provider key.
+  The runtime and its host receive it. Provider permissions govern later use;
+  revocation stops future retrieval, not use of copies already obtained.
+- **Proxy:** `list_proxy_capabilities` returns approved versioned connections and
+  APIs; `execute_proxy_request` forwards one permitted request without returning
+  the provider key. Responses can still contain sensitive provider data.
+
+For proxy access, select the intended account/connection, API and methods during
+approval. Discover current bindings before composing a request, then preserve
+its contract version, connection ID/revision, profile ID/version and response
+mode. The [example request](examples/proxy-request.json) uses fictional bindings:
+replace them with current discovery values before explicitly submitting it.
+The Resend path is an example, not a Resend-only API.
+
+Inspect gateway and provider status separately. There are no automatic retries,
+silent permission substitutions or fallbacks to credential release. Method
+filters are not semantic read-only guarantees: GET can mutate data, and GraphQL
+can use POST for queries and mutations. Provider permissions still apply.
+Revocation stops future requests, not ones already dispatched.
+
+See the [shared contract and limits](https://gazebohq.com/docs/api/agent-access#proxy-requests)
+and [explicit Cursor OAuth configuration](https://gazebohq.com/docs/mcp/cursor).
+Proxy audit records contain metadata and outcomes, not payloads or authentication
+headers. Authentication rejection can happen before a proxy request ID exists.
 
 ## Available tools
 
@@ -27,8 +66,10 @@ The actual provider credential is delivered to the MCP client or agent runtime a
 | `get_identity` | View connection identity and access | Yes | No | Yes | No |
 | `get_credential` | Retrieve a service credential | No | No | No | No |
 | `list_audit_events` | List credential-access events | Yes | No | Yes | No |
+| `list_proxy_capabilities` | Discover permitted proxy requests | Yes | No | Yes | No |
+| `execute_proxy_request` | Make an approved proxy request | No | Yes | No | Yes |
 
-Credential retrieval is not marked read-only: valid attempts create audit events and successful retrieval releases a sensitive value to the runtime and its host. It is not destructive because it does not modify or delete provider data. Open-world is false because the tools operate on Gazebo records, not arbitrary provider endpoints. These MCP hints describe behavior; they do not grant access, enforce client confirmation or guarantee safe handling of returned keys. Authentication, selected-key approval and release-policy checks remain unchanged. Clients may cache tool metadata and need a refresh after a hosted deployment.
+Tools are mode-specific, not all exposed together. Retrieval exposes `get_identity`, `get_credential` and `list_audit_events`; proxy exposes `get_identity` and the two proxy tools. Credential retrieval is not marked read-only because it audits attempts and releases sensitive values, but does not modify provider data. Proxy execution is destructive/open-world because permitted requests can change or delete external provider data; discovery is metadata only. MCP hints do not grant permission or guarantee client confirmation. Clients may cache tool metadata and need a refresh after a hosted deployment.
 
 ### `get_identity`
 
@@ -75,7 +116,7 @@ Returns recent credential-access attempts for the authenticated agent, not subse
 | `service` | string | No | Filter by service |
 | `cursor` | string | No | Opaque pagination cursor |
 
-## Recommended flow
+## Recommended retrieval flow
 
 1. Call `get_identity` to verify the authenticated agent and policy.
 2. Call `get_credential` with the service, approved key name and actual intended HTTP method. OAuth requires the approved key name.
@@ -84,7 +125,11 @@ Returns recent credential-access attempts for the authenticated agent, not subse
 
 ## Client configuration
 
-**Tested paths include Cursor Desktop, normal Claude Chat, Claude Desktop, ChatGPT Business on web, Claude Code’s desktop Code session, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded client test is the ChatGPT Business web OAuth flow on 8 November 2026; coverage differs by runtime. Other ChatGPT plans and token refresh, Claude Code terminal/CLI tool execution and legacy Windsurf/Cascade remain unverified. The ChatGPT fictional-data test does not establish public-directory eligibility. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
+The existing client summary below describes **retrieval** coverage. The
+separate Cursor proxy OAuth result and its limits are recorded in the
+[compatibility guide](docs/client-verification.md#proxy-oauth-evidence).
+
+**Tested retrieval paths include Cursor Desktop, normal Claude Chat, Claude Desktop, ChatGPT Business on web, Claude Code’s desktop Code session, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded retrieval test is the ChatGPT Business web OAuth flow on 8 November 2026; coverage differs by runtime. Cursor proxy OAuth testing on 16 November is recorded separately above. Other ChatGPT plans and token refresh, Claude Code terminal/CLI tool execution and legacy Windsurf/Cascade remain unverified. The ChatGPT fictional-data test does not establish public-directory eligibility. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
 
 Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
@@ -95,13 +140,13 @@ Authorization: Bearer <your-agent-token>
 
 ### Cursor
 
-For the tested desktop OAuth path, add the URL to project `.cursor/mcp.json` or global `~/.cursor/mcp.json`:
+For explicit retrieval on Cursor desktop, configure project `.cursor/mcp.json` or global `~/.cursor/mcp.json`:
 
 ```json
-{"mcpServers":{"gazebo":{"url":"https://app.gazebohq.com/api/mcp"}}}
+{"mcpServers":{"gazebo":{"url":"https://app.gazebohq.com/api/mcp","auth":{"CLIENT_ID":"YOUR_PUBLIC_CLIENT_ID","scopes":["gazebo.credentials.read"]}}}}
 ```
 
-Use Cursor's Authenticate/connect action. Gazebo supports public dynamic registration (DCR); registration alone creates no access. Sign in, select only the keys to share, choose an access deadline and approve. OAuth retrieval must name the approved `key_name`. Desktop and cloud/web sign-ins may differ.
+Use the [Cursor guide](https://gazebohq.com/docs/mcp/cursor) to register a public client and copy its returned client ID; no client secret is required. Use Cursor's Authenticate/connect action, select only the keys to share, choose an access deadline and approve. OAuth retrieval must name the approved `key_name`. For proxy instead, use a separate entry with `auth.scopes: ["gazebo.proxy.execute"]` and approve connection/API/method permissions, not raw-key release. Desktop and cloud/web callbacks and sign-ins differ. Dynamic registration remains supported for clients requesting one purpose correctly.
 
 For the manual agent-token alternative:
 
@@ -167,13 +212,25 @@ This hosted path passed the checks described in the verification matrix. It does
 
 ## Verification checklist
 
-After configuring a client:
+### Credential retrieval
 
-1. Confirm initialization and tool discovery list all three Gazebo tools.
+After configuring a retrieval connection:
+
+1. Confirm initialization and discovery list `get_identity`, `get_credential` and `list_audit_events`.
 2. Call `get_identity` and verify the expected agent name and policy.
 3. Call `get_credential` for an allowed service and method.
 4. Call `list_audit_events` and verify the credential-access event is present.
 5. Confirm an account API token, invalid token, and revoked agent token are rejected.
+
+### Proxy access
+
+Use a proxy-enabled deployment and a separately approved proxy connection:
+
+1. Confirm discovery lists `get_identity`, `list_proxy_capabilities` and `execute_proxy_request`, not the credential-retrieval tools.
+2. Call `get_identity` to check the intended agent, then `list_proxy_capabilities` for its current connection/profile references and permitted methods.
+3. Explicitly execute one known low-impact request using those exact references and a permitted method. An HTTP method alone does not establish that an operation is harmless.
+4. Check the gateway/tool result and provider status separately, and match the returned `request_id` in Gazebo Logs.
+5. Revoke the specific test grant or agent, then confirm a fresh attempt is rejected without reconnecting or approving access again. Authentication rejection can occur before a proxy request ID exists.
 
 See [docs/client-verification.md](docs/client-verification.md) for the release-test matrix.
 
