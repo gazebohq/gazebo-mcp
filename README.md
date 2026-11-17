@@ -23,6 +23,9 @@ The actual provider credential is delivered to the MCP client or agent runtime a
 
 ## Choose retrieval or proxy
 
+Proxy access requires a proxy-enabled Gazebo deployment. Proxy tools are not
+advertised when proxy access is disabled.
+
 Access mode is fixed when a manual agent is created. OAuth connections request
 one purpose: `gazebo.credentials.read` for retrieval or
 `gazebo.proxy.execute` for proxy access. Do not request both together.
@@ -209,13 +212,25 @@ This hosted path passed the checks described in the verification matrix. It does
 
 ## Verification checklist
 
-After configuring a client:
+### Credential retrieval
 
-1. Confirm initialization and tool discovery list all three Gazebo tools.
+After configuring a retrieval connection:
+
+1. Confirm initialization and discovery list `get_identity`, `get_credential` and `list_audit_events`.
 2. Call `get_identity` and verify the expected agent name and policy.
 3. Call `get_credential` for an allowed service and method.
 4. Call `list_audit_events` and verify the credential-access event is present.
 5. Confirm an account API token, invalid token, and revoked agent token are rejected.
+
+### Proxy access
+
+Use a proxy-enabled deployment and a separately approved proxy connection:
+
+1. Confirm discovery lists `get_identity`, `list_proxy_capabilities` and `execute_proxy_request`, not the credential-retrieval tools.
+2. Call `get_identity` to check the intended agent, then `list_proxy_capabilities` for its current connection/profile references and permitted methods.
+3. Explicitly execute one known low-impact request using those exact references and a permitted method. An HTTP method alone does not establish that an operation is harmless.
+4. Check the gateway/tool result and provider status separately, and match the returned `request_id` in Gazebo Logs.
+5. Revoke the specific test grant or agent, then confirm a fresh attempt is rejected without reconnecting or approving access again. Authentication rejection can occur before a proxy request ID exists.
 
 See [docs/client-verification.md](docs/client-verification.md) for the release-test matrix.
 
