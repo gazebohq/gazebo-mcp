@@ -84,7 +84,7 @@ Returns recent credential-access attempts for the authenticated agent, not subse
 
 ## Client configuration
 
-**Tested paths include Cursor Desktop, normal Claude Chat, Claude Desktop, ChatGPT Business on web, Claude Code’s desktop Code session, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded client test is the ChatGPT Business web OAuth flow on 8 November 2026; coverage differs by runtime. Other ChatGPT plans and token refresh, Claude Code terminal/CLI tool execution and legacy Windsurf/Cascade remain unverified. The ChatGPT fictional-data test does not establish public-directory eligibility. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
+**Tested paths include Cursor Desktop, normal Claude Chat, Claude Desktop, ChatGPT Business on web, Claude Code’s desktop Code session, Replit Agent, Devin hosted, Codex CLI and the OpenAI Responses API.** The latest recorded client test is the Replit Agent custom MCP OAuth flow on 23 November 2026; coverage differs by runtime. Other ChatGPT plans and token refresh, Claude Code terminal/CLI tool execution and legacy Windsurf/Cascade remain unverified. The ChatGPT fictional-data test does not establish public-directory eligibility. See the [compatibility guide](docs/client-verification.md) for tested authentication methods, environments and detailed results.
 
 Client configuration changes independently of Gazebo. Use the current client documentation for the exact configuration surface and field names. For clients using manual agent tokens, use:
 
@@ -156,6 +156,10 @@ Normal Chat OAuth was separately verified on 7 November 2026: identity, approved
 In Claude's **Code** tab, start a local session in a separate test folder and open **+ → Connectors**. Add or reconnect Gazebo using the canonical endpoint, sign in with OAuth and approve only the service keys the connection needs. Start with get_identity; OAuth retrieval must name the approved key_name. This desktop connector has passed identity, fictional-key retrieval, matching audit retrieval and rejection after revocation. See the [compatibility guide](docs/client-verification.md#claude-code-desktop-evidence-and-limits) for the tested environment and limits.
 
 Terminal configuration is separate: configure remote HTTP with the canonical endpoint and agent authorization header above, following Anthropic's current documentation. The earlier Linux CLI run covered connection health only, not tool execution. Desktop OAuth results do not verify CLI behavior or local-only credential handling.
+
+### Replit Agent
+
+Follow the [Replit Agent setup guide](https://gazebohq.com/docs/mcp/replit) to add Gazebo as a custom MCP connection, sign in with OAuth, and approve selected service keys. Start with `get_identity` to verify access without retrieving a credential. See the [Replit verification evidence](docs/client-verification.md#replit-agent-evidence-and-limits) for the tested flow and its limits.
 
 ### Devin hosted and legacy Windsurf
 

@@ -65,7 +65,7 @@ Directory submission can begin when:
 
 ## Current evidence
 
-As of 8 November 2026, direct protocol and Responses API tests, native CLI checks, and user-performed ChatGPT Business web, normal Claude Chat, Claude Desktop, Claude Code desktop, Cursor Desktop and Devin-hosted OAuth runs provide the evidence below. The latest date is the latest recorded client run, not a retest of every client. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
+The latest recorded run was Replit Agent’s custom MCP OAuth test on 23 November 2026. Earlier evidence includes direct protocol and Responses API tests, native CLI checks, and OAuth runs in ChatGPT Business on web, normal Claude Chat, Claude Desktop, Claude Code desktop, Cursor Desktop and Devin hosted. This is not a retest of every client. Coverage differs by client: do not turn these results into universal compatibility or treat missing cases as passed.
 
 | Client | Runtime result |
 |---|---|
@@ -79,8 +79,17 @@ As of 8 November 2026, direct protocol and Responses API tests, native CLI check
 | Legacy Windsurf / Cascade | Not tested; hosted Devin evidence is not evidence for older clients. |
 | OpenAI Responses API | Passed 25 October 2026 with gpt-5.4-mini: discovery, approval, identity, fictional-key access, policy denials, audit pagination and revoked-token failure; store:false |
 | ChatGPT Business — web | 8 November 2026: OAuth connection, identity, reported named fictional-key GET retrieval and matching successful audit lookup. Following Gazebo-side revocation, a fresh retrieval prompted reconnection. Maintainer-supplied screenshots; exact client version, raw token exchange and final HTTP status unrecorded. Other plans, native mobile, refresh, timed expiry, policy-denial cases and pagination unverified. |
+| Replit Agent | 23 November 2026: custom MCP install link, OAuth approval, identity, approved fictional-key retrieval, unapproved-key denial, matching audit entries, and rejection after grant revocation. Replit Agent only; no catalog, proxy, or deployed-app runtime verification. |
 
 Use only fictional keys for verification. Cloud services and gateways can receive tool results; do not describe every desktop interface as local execution.
+
+## Replit Agent evidence and limits
+
+On 23 November 2026, the maintainer used the **Add Gazebo to Replit** link, now available in the [setup guide](https://gazebohq.com/docs/mcp/replit), to connect to Gazebo's hosted MCP endpoint. OAuth approval covered one named fictional service key. `get_identity` showed the approved scope without returning a credential value.
+
+Through the connected integration, `get_credential` retrieved the approved fictional key for a declared `GET` and denied a request for an unapproved key name. `list_audit_events` contained the corresponding success and denial. After the maintainer revoked the grant in Gazebo, a fresh retrieval through the same Replit connection was rejected as unauthorized. There was no reconnect or new approval before that check. No provider requests were made and no live provider credential was used.
+
+This verifies credential retrieval through a custom MCP connection in Replit Agent. It does not establish Replit catalog placement, proxy access, or compatibility with the runtime of an app deployed on Replit. A successful retrieval returns the key to the client runtime and its host; revocation stops future retrieval, not use of a key already received.
 
 ## ChatGPT Business web evidence and limits
 
