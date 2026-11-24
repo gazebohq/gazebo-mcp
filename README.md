@@ -18,6 +18,17 @@ Long-lived credentials should not be copied into every agent's configuration. Ga
 
 The actual provider credential is delivered to the MCP client or agent runtime and can be accessed by its host. Cloud connectors, gateways and model providers may receive it and may retain tool output according to their settings. Treat it as ephemeral where possible and do not deliberately persist it. Revoking Gazebo access blocks future retrieval; rotate or revoke the provider key to invalidate copies already received.
 
+## Quick start
+
+Before connecting, add a named key with a fictional value in [Services](https://app.gazebohq.com/services).
+
+1. **Connect.** Follow the [client configuration](#client-configuration) below and choose OAuth where supported.
+2. **Approve a test key.** When Gazebo asks which keys to share, select only the fictional key and set a short expiry.
+3. **Verify the connection.** Call `get_identity` and check that the approved service and key name match what you selected. This does not return the key value.
+4. **Check the audit log.** Call `get_credential` with the approved service, key name and intended method. Then call `list_audit_events` or open [Logs](https://app.gazebohq.com/logs) to confirm the retrieval was recorded. No provider API call is needed for this test.
+
+Successful retrieval returns the key to the client runtime and its host. Only share real keys with clients and hosts you trust. Revoking a grant stops future retrieval; it does not invalidate keys the client already received.
+
 ## Available tools
 
 ### Tool metadata and permissions
@@ -197,6 +208,7 @@ The remote-only [server.json](server.json) passes the official Registry schema. 
 
 - Product documentation: [gazebohq.com/docs/mcp](https://gazebohq.com/docs/mcp)
 - Issues about public documentation or client interoperability: use this repository's issue tracker
+- Privacy Policy: [gazebohq.com/privacy](https://gazebohq.com/privacy)
 - Security vulnerabilities: see [SECURITY.md](SECURITY.md)
 
 ## License
